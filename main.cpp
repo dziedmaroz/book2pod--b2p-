@@ -14,21 +14,6 @@ int main (int argc, char** argv)
     delete args;
     return 0;
 }
-
-char* numToText (int x)
-{
-	char* res = new char[NUMSIZE];
-	for (int i=0;i<NUMSIZE;i++)
-		res[i]=0;
-	int i=NUMSIZE-1;
-	while (x!=0)
-	{
-		res[i--]=x%10;
-		x/=10;
-	}
-	return res;
-}
-
 Args* parseArgumets (int argc, char** argv)
 {
     Args* args = new Args;

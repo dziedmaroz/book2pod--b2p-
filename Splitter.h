@@ -4,6 +4,7 @@
 #include <iostream>
 #define FILESIZE 4096
 #define LOGFILE "splitlog.log"
+#define NUMSIZE 8
 
 using namespace std;
 
@@ -26,11 +27,14 @@ class Splitter
 	char* outputPath_;
     int filesize_;
         bool verbose_;
+        int curPiece_;
         bool verbScreen_;
-        ostream log_;
+        FILE* log_;
 
         Splitter(void);
         int getFileSize (char* filename);
+        char* genNoteName ();
+        char* numToText (int x);
 public:
         Splitter (char* filename,bool verbose, char* logOutput="", char* outputPath ="", char* chaterSign="√À¿¬¿") ;
         Splitter& operator= (Splitter& orig);

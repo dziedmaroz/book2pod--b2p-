@@ -4,7 +4,7 @@
 
 
 #define FILE_SIZE 4096
-#define NUMSIZE 8
+
 
 
 char* numToText (int x);
