@@ -11,12 +11,14 @@ Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outpu
     chapterSign_ = NULL;
     log_=NULL;
 
-    filename_= new char[strlen(filename)];
+    filename_= new char[strlen(filename)+1];
     strcpy(filename_,filename);
+	filename_[strlen (filename)]='\0';
+	filesize_ = getFileSize (filename_);
 
     outputPath_ = new char [strlen(filename)+strlen(outputPath)+1];
     strcpy (outputPath_,outputPath);
-    outputPath_[strlen(outputPath_)]=DIR_SEP;
+ //   outputPath_[strlen(outputPath_)]=DIR_SEP;
     strcat (outputPath_,filename);
 
 
@@ -24,7 +26,7 @@ Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outpu
     else
     {
         verbScreen_=false;
-        log_ = fopen (logOutput,"a");
+        log_ = fopen (logOutput,"w");
         if (!log_)
         {
             printf ("ERR_INIT:Can't create log file ('%s')\n",logOutput);
@@ -35,7 +37,8 @@ Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outpu
 
     if (chapterSign!=NULL)
     {
-        chapterSign_ = new char [strlen (chapterSign)];
+		int tmp = strlen (chapterSign);
+		chapterSign_ = new char [tmp];	 
         strcpy (chapterSign_,chapterSign);
     }
 }
@@ -54,13 +57,15 @@ int Splitter::getFileSize (char *filename)
 {
     int size =-1;
     FILE* file = fopen (filename,"r");
-    if (!file)
+    if (file!=NULL)
     {
+		fseek (file,0,SEEK_END);
         size=ftell (file);
         fclose (file);
     }
     else
     {
+
        printf ("ERR_INIT: Can't open file '%s'.\n",filename);
        exit (100);
     }
