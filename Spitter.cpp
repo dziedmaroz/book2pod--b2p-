@@ -10,14 +10,20 @@ Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outpu
     title_ = NULL;
     chapterSign_ = NULL;
     log_=NULL;
+    outputPath_=NULL;
 
     filename_= new char[strlen(filename)+1];
     strcpy(filename_,filename);
-	filename_[strlen (filename)]='\0';
-	filesize_ = getFileSize (filename_);
+    filename_[strlen (filename)]='\0';
+    filesize_ = getFileSize (filename_);
+    maxPieces_=filesize_/FILESIZE+filesize_/(FILESIZE*10);
+    curPiece_=0;
 
-    outputPath_ = new char [strlen(filename)+strlen(outputPath)+1];
-    strcpy (outputPath_,outputPath);
+    outputPath_ = new char [strlen(filename)+(outputPath!=NULL?strlen(outputPath):0)+1];
+    if (outputPath!=NULL)
+    {
+         strcpy (outputPath_,outputPath);
+    }
  //   outputPath_[strlen(outputPath_)]=DIR_SEP;
     strcat (outputPath_,filename);
 
@@ -30,6 +36,7 @@ Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outpu
         if (!log_)
         {
             printf ("ERR_INIT:Can't create log file ('%s')\n",logOutput);
+            exit (100);
         }
     }
 
@@ -67,7 +74,7 @@ int Splitter::getFileSize (char *filename)
     {
 
        printf ("ERR_INIT: Can't open file '%s'.\n",filename);
-       exit (100);
+
     }
 
     return size;

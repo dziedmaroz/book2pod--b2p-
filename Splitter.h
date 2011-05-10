@@ -36,7 +36,7 @@ class Splitter
         char* genNoteName ();
         char* numToText (int x);
 public:
-        Splitter (char* filename,bool verbose, char* logOutput="", char* outputPath ="", char* chaterSign="√À¿¬¿") ;
+        Splitter (char* filename,bool verbose, char* logOutput="", char* outputPath ="", char* chaterSign="–ì–õ–ê–í–ê") ;
         Splitter& operator= (Splitter& orig);
     bool Split ();
         ~Splitter(void);

@@ -146,6 +146,7 @@
      <value type="QString">log</value>
      <value type="QString">-c</value>
      <value type="QString">Глава</value>
+     <value type="QString">master.txt</value>
     </valuelist>
     <value key="Qt4ProjectManager.Qt4RunConfiguration.ProFile" type="QString">book2pod.pro</value>
     <value key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix" type="bool">false</value>

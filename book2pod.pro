@@ -17,7 +17,8 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     Spitter.cpp \
-    PodExceptions.cpp
+    PodExceptions.cpp \
+    Buffer.cpp
 
 OTHER_FILES += \
     master.txt
@@ -25,4 +26,5 @@ OTHER_FILES += \
 HEADERS += \
     Splitter.h \
     PodExceptions.h \
-    main.h
+    main.h \
+    Buffer.h

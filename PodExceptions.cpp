@@ -4,15 +4,16 @@
 
 
 
-PodExceptions::PodExceptions(char* text)
+PodExceptions::PodExceptions(int code,char* text)
 {
 	text_= new char [strlen(text)];
 	strcpy(text_,text);
+	code_=code;
 }
 
 void PodExceptions::print (ostream& out)
 {
-	out<<text_<<endl;
+	out<<code_<<":"<<text_<<endl;
 }
 
 PodExceptions::~PodExceptions(void)
