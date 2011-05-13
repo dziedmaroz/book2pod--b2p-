@@ -105,19 +105,22 @@ bool Buffer::writeBuffer (char *foutName)
 bool Buffer::fillBuffer (FILE *fin )
 {
 
-     int bytes = 0;
+
+     int textBegBack = textBeg_;
      while (textBeg_<=textEnd_ && !feof(fin))
      {
          buffer_[textBeg_++]=fgetc (fin);
-         bytes++;
      }
-     if (bytes%2!=0)
+     for (int i=textEnd_;i>textBeg_;i--)
      {
-         for (int i=textEnd_;i<BUFF_SIZE-1;i++)
-         buffer_[i]=buffer_[i+1];
-         buffer_[BUFF_SIZE-1]='\0';
-         fseek (fin,ftell(fin)-1,SEEK_SET);
+         if (buffer_[i]==' ')
+         {
+             fseek(fin,ftell(fin)-i,SEEK_CUR);
+             for (int j=i+1;j<BUFF_SIZE-i;j++)
+                 buffer_[j]=buffer_[j+i];
+         }
      }
+
 
      for (int i=SCREEN_SIZE;i<textEnd_;i++)
      {
