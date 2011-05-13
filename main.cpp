@@ -7,11 +7,13 @@ int main (int argc, char** argv)
 		printf ("%d %s\n",i,argv[i]);
     Splitter split (args->filename_,args->verbose_,args->outLog_,args->outputPath_,args->chapterSign_);
 
+    split.Split ();
 
-	if (args->chapterSign_!=NULL) delete [] args->chapterSign_;
-	if (args->filename_!=NULL)    delete [] args->filename_;
-	if (args->outLog_!=NULL)      delete [] args->outLog_;
-	if (args->outputPath_!=NULL)  delete [] args->outputPath_;
+
+    if (args->chapterSign_!=NULL) delete [] args->chapterSign_;
+    if (args->filename_!=NULL)    delete [] args->filename_;
+    if (args->outLog_!=NULL)      delete [] args->outLog_;
+    if (args->outputPath_!=NULL)  delete [] args->outputPath_;
     delete args;
     return 0;
 }

@@ -105,15 +105,16 @@ char* Splitter::genNoteName ()
 
 char* Splitter::numToText (int x)
 {
-	char* res = new char[NUMSIZE];
+	char* res = new char[NUMSIZE+1];
 	for (int i=0;i<NUMSIZE;i++)
-		res[i]=0;
+		res[i]='0';
 	int i=NUMSIZE-1;
 	while (x!=0)
 	{
-		res[i--]=x%10;
+		res[i--]='0'+x%10;
 		x/=10;
 	}
+	res [NUMSIZE]='\0';
 	return res;
 }
 
@@ -161,6 +162,8 @@ bool Splitter::Split ()
 {
     while (!feof(f_input_))
     {
+        int diff = filesize_ - ftell (f_input_);
+
         char* tmpTitle=findTitle ();
         if (tmpTitle != NULL)
         {
@@ -168,6 +171,7 @@ bool Splitter::Split ()
             curTitle_ = tmpTitle;
         }
         Buffer buffer ;
+        buffer = Buffer ();
         buffer.writeTagTitle (curTitle_);
         char* tmp;
         if (curPiece_!=0)
@@ -176,15 +180,21 @@ bool Splitter::Split ()
             buffer.writeTagPrev (tmp);
             delete [] tmp;
         }
-        if (filesize_-ftell(f_input_)>FILESIZE)
+        if (diff>FILESIZE)
         {
             tmp = numToText (curPiece_+1);
             buffer.writeTagNext (tmp);
             delete [] tmp;
         }
         buffer.fillBuffer (f_input_);
+        if (diff<FILESIZE)
+        {
+           buffer.terminateBuffer (diff);
+        }
         tmp = numToText (curPiece_);
         buffer.writeBuffer (tmp);
         delete [] tmp;
+        curPiece_++;
     }
+    return true;
 }
