@@ -1,5 +1,11 @@
 #include "Buffer.h"
 
+Buffer::Buffer ()
+{
+    textBeg_ = 0;
+    textEnd_ = BUFF_SIZE;
+}
+
 bool Buffer::writeTagTitle (char *title)
 {
     char tagBeg [] = "<TITLE>";

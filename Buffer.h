@@ -15,7 +15,7 @@ class Buffer
 
 
 public:
-    Buffer() {textBeg_=0;textEnd_=BUFF_SIZE;};
+    Buffer();
     bool writeTagTitle (char* title);
     bool writeTagPrev (char* filename);
     bool writeTagNext (char* filename);
