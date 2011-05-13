@@ -6,7 +6,7 @@
 
 #define FILESIZE 4096
 #define LOGFILE "splitlog.log"
-#define NUMSIZE 8
+#define NUMSIZE 5
 
 using namespace std;
 
