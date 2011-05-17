@@ -118,29 +118,31 @@ char* Splitter::numToText (int x)
 	return res;
 }
 
-char* Splitter::findTitle ()
+void Splitter::findTitle (char* result)
 {
-    if (chapterSign_==NULL) return NULL;
+    if (chapterSign_==NULL)
+    {
+        delete [] result;
+        result= NULL;
+    }
     fpos_t pos;
     fgetpos (f_input_,&pos);
     char* tmpStr = new char [FILESIZE];
     for (int i=0;i<FILESIZE;i++)
     {
-        tmpStr[i]=fgetc (f_input_);
+        fgets (tmpStr,FILESIZE,f_input_);
     }
     fsetpos (f_input_,&pos);
-    char* where = strstr (tmpStr,chapterSign_);
-    char* res;
-    if (where == NULL) res=where;
+    char* where = strstr (tmpStr,chapterSign_);    
+    if (where == NULL) result=where;
     else
     {
-        res = new char [strchr (where,'\n')-where];
-        for (int i=0;i<strchr(where,'\n')-where;i++)
-            res [i] = where[i];
         where [strchr(where,'\n')-where] = '\0';
+        delete[] result;
+        result = new char [strlen(where)];
+        strcpy (result,where);
     }
-    delete [] tmpStr;
-    return res;
+    delete [] tmpStr;    
 }
 
 bool Splitter::openFile ()
@@ -164,36 +166,32 @@ bool Splitter::Split ()
     {
         int diff = filesize_ - ftell (f_input_);
 
-        char* tmpTitle=findTitle ();
-        if (tmpTitle != NULL)
-        {
-            delete [] curTitle_ ;
-            curTitle_ = tmpTitle;
-        }
+        findTitle (curTitle_);
         Buffer buffer ;
-        buffer = Buffer ();
-        buffer.writeTagTitle (curTitle_);
-        char* tmp;
+        buffer = Buffer ();         
+        char* prevFile=NULL;
         if (curPiece_!=0)
         {
-            tmp= numToText (curPiece_-1);
-            buffer.writeTagPrev (tmp);
-            delete [] tmp;
+            prevFile= numToText (curPiece_-1);
         }
+
+        char*   nxtFile=NULL;
         if (diff>FILESIZE)
         {
-            tmp = numToText (curPiece_+1);
-            buffer.writeTagNext (tmp);
-            delete [] tmp;
+            nxtFile = numToText (curPiece_+1);
         }
+
+        buffer.prepareBuffer (nxtFile,prevFile,curTitle_);
         buffer.fillBuffer (f_input_);
         if (diff<FILESIZE)
         {
            buffer.terminateBuffer (diff);
         }
-        tmp = numToText (curPiece_);
-        buffer.writeBuffer (tmp);
-        delete [] tmp;
+        char* curFile = numToText (curPiece_);
+        buffer.writeBuffer (curFile);
+        delete [] prevFile;
+        delete [] nxtFile;
+        delete [] curFile;
         curPiece_++;
     }
     return true;

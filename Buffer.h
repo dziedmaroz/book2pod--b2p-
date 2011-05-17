@@ -9,19 +9,22 @@
 #define SCREEN_SIZE 4097
 class Buffer
 {
-    unsigned char buffer_ [BUFF_SIZE];
+    char buffer_ [BUFF_SIZE];
     int textBeg_;
     int textEnd_;
+    int bufferEnd_;
 
-
-public:
-    Buffer();
-    bool writeTagTitle (char* title);
     bool writeTagPrev (char* filename);
     bool writeTagNext (char* filename);
+    bool writeTagTitle (char* title);
+    bool shiftTextEndLeft (int count);
+public:
+    Buffer();
+    bool prepareBuffer (char* nxtFilename, char* prevFilename, char* title);
     bool fillBuffer (FILE* fin);
     void terminateBuffer (int pos);
-    bool writeBuffer (char* foutName);    
+    bool writeBuffer (char* foutName);
+
     ~Buffer (){};
 };
 
