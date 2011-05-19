@@ -13,18 +13,23 @@ class Buffer
     int textBeg_;
     int textEnd_;
     int bufferEnd_;
+    int inFileSize_;
+
+
+
 
     bool writeTagPrev (char* filename);
     bool writeTagNext (char* filename);
     bool writeTagTitle (char* title);
     bool shiftTextEndLeft (int count);
+    int getDiff (FILE* file);
 public:
-    Buffer();
+    Buffer(int inFileSize);   
     bool prepareBuffer (char* nxtFilename, char* prevFilename, char* title);
     bool fillBuffer (FILE* fin);
     void terminateBuffer (int pos);
     bool writeBuffer (char* foutName);
-
+    void writeStat (FILE* fout);
     ~Buffer (){};
 };
 

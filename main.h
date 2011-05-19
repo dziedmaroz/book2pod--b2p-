@@ -2,7 +2,7 @@
 #include "Splitter.h"
 #include <cstring>
 #include <cstdlib>
-
+#include "Buffer.h"
 
 #define FILE_SIZE 4096
 

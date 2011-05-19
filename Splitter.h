@@ -40,7 +40,7 @@ class Splitter
         int getFileSize (char* filename);
         char* genNoteName ();
         char* numToText (int x);
-        void findTitle (char* curTitle);
+        void findTitle ( );
         bool openFile ();
         void freeAll ();
 public:

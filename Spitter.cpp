@@ -118,31 +118,34 @@ char* Splitter::numToText (int x)
 	return res;
 }
 
-void Splitter::findTitle (char* result)
+void Splitter::findTitle ( )
 {
     if (chapterSign_==NULL)
     {
-        delete [] result;
-        result= NULL;
+        delete [] curTitle_;
+        curTitle_= NULL;
     }
     fpos_t pos;
     fgetpos (f_input_,&pos);
-    char* tmpStr = new char [FILESIZE];
+    char* const tmpStr = new char [FILESIZE];
     for (int i=0;i<FILESIZE;i++)
     {
-        fgets (tmpStr,FILESIZE,f_input_);
+        tmpStr[i]=fgetc(f_input_);
     }
     fsetpos (f_input_,&pos);
     char* where = strstr (tmpStr,chapterSign_);    
-    if (where == NULL) result=where;
-    else
+    int nillPos = 0;
+    if (where != NULL)
     {
-        where [strchr(where,'\n')-where] = '\0';
-        delete[] result;
-        result = new char [strlen(where)];
-        strcpy (result,where);
+        delete [] curTitle_;
+        nillPos= strchr(where,'\n')-where;
+        //where [nillPos] = '\0';
+        curTitle_ = new char [nillPos+1];
+        strncpy (curTitle_,where,nillPos);
+        curTitle_[nillPos]='\0';
+        //where [nillPos] = '\n';
     }
-    delete [] tmpStr;    
+    delete [] tmpStr;
 }
 
 bool Splitter::openFile ()
@@ -162,27 +165,33 @@ void Splitter::freeAll ()
 
 bool Splitter::Split ()
 {
-    while (!feof(f_input_))
+
+    while (filesize_>ftell(f_input_))
     {
         int diff = filesize_ - ftell (f_input_);
+        if (curPiece_>345)
+        {
+            curPiece_=curPiece_;
+        }
+        findTitle ();
+        Buffer buffer (filesize_) ;
 
-        findTitle (curTitle_);
-        Buffer buffer ;
-        buffer = Buffer ();         
         char* prevFile=NULL;
         if (curPiece_!=0)
         {
             prevFile= numToText (curPiece_-1);
         }
 
-        char*   nxtFile=NULL;
+        char*   nxtFile=NULL;        
         if (diff>FILESIZE)
         {
-            nxtFile = numToText (curPiece_+1);
+            nxtFile = numToText (curPiece_+1);            
         }
 
-        buffer.prepareBuffer (nxtFile,prevFile,curTitle_);
+        buffer.prepareBuffer (nxtFile,prevFile,curTitle_);        
         buffer.fillBuffer (f_input_);
+        fprintf (log_,"CUR_PIECE:  %s\n",numToText (curPiece_));
+        buffer.writeStat (log_);
         if (diff<FILESIZE)
         {
            buffer.terminateBuffer (diff);
