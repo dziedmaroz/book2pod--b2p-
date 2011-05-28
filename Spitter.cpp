@@ -4,204 +4,152 @@
 #include "Buffer.h"
 #define DIR_SEP '/'
 
-Splitter::Splitter( char *filename, bool verbose,  char *logOutput , char *outputPath,  char *chapterSign )
-
+Splitter::Splitter (Args *args)
 {
-    title_ = NULL;
-    chapterSign_ = NULL;
-    log_=NULL;
-    outputPath_=NULL;
-    curTitle_ = NULL;
-    filename_= new char[strlen(filename)+1];
-    strcpy(filename_,filename);
-    filename_[strlen (filename)]='\0';
-    filesize_ = getFileSize (filename_);
-    maxPieces_=filesize_/FILESIZE+filesize_/(FILESIZE*10);
-    curPiece_=0;
-
-    outputPath_ = new char [strlen(filename)+(outputPath!=NULL?strlen(outputPath):0)+1];
-    if (outputPath!=NULL)
+    _isErrors = false;
+    _chapterSign = new char [strlen (args->chapterSign_)];
+    if ( args->chapterSign_!=NULL)
     {
-         strcpy (outputPath_,outputPath);
+        strcpy (_chapterSign,args->chapterSign_);
     }
-    //   outputPath_[strlen(outputPath_)]=DIR_SEP;
-    strcat (outputPath_,filename);
-
-
-    if (logOutput ==0 ||strlen(logOutput)==0) verbScreen_ = true;
     else
     {
-        verbScreen_=false;
-        log_ = fopen (logOutput,"w");
-        if (!log_)
-        {
-            printf ("ERR_INIT:Can't create log file ('%s')\n",logOutput);
-            exit (100);
-        }
+        _chapterSign = NULL;
+        _isErrors = true;
     }
 
-    verbose_=verbose;
-
-    if (chapterSign!=NULL)
+    _filename = new char [strlen (args->filename_)];
+    if (args->filename_!=NULL)
     {
-		int tmp = strlen (chapterSign);
-		chapterSign_ = new char [tmp];	 
-        strcpy (chapterSign_,chapterSign);
+        strcpy (_filename,args->filename_);
+    }
+    else
+    {
+        _filename = NULL;
+        _isErrors = true;
     }
 
-    if (!openFile () || filesize_ == -1)
+    _sourceFile = fopen (_filename,"r");
+    if (!_sourceFile)
     {
-        if (verbose_)
-        {
-            if (verbScreen_)
-                printf ("ERR_INIT:Can't read file '%s'",filename_);
-            else
-                fprintf (log_,"ERR_INIT:Can't read file '%s'",filename_);
-        }
+        _isErrors = true;
+    }
+    else
+    {
+        fseek (_sourceFile,0,SEEK_END);
+        _filesize = ftell (_sourceFile);
+        rewind (_sourceFile);
+    }
+
+    _outputPath = new char [strlen(args->outputPath_)];
+    if (args->outputPath_!=NULL)
+    {
+        strcpy (_outputPath,args->outputPath_);
+    }
+    else
+    {
+        _isErrors=true;
+    }
+
+    _currentPiece = 0;
+    _currentTitle = NULL;
+
+    if (_isErrors)
+    {
+        printf ("ERR_INIT: There were some errors while init\n");
         freeAll ();
-        exit (100);
-    }
-}
-
-Splitter::~Splitter()
-{
-	freeAll();
-	if (log_!=NULL) fclose (log_);
-}
-
-
-int Splitter::getFileSize (char *filename)
-{
-    int size =-1;
-    FILE* file = fopen (filename,"r");
-    if (file!=NULL)
-    {
-		fseek (file,0,SEEK_END);
-        size=ftell (file);
-        fclose (file);
-    }
-    else
-    {
-
-       printf ("ERR_INIT: Can't open file '%s'.\n",filename);
-
     }
 
-    return size;
-}
-
-char* Splitter::genNoteName ()
-{
-    char* piece = numToText (curPiece_);
-    char* result = new char [NUMSIZE+5];
-    strcpy (result,"PAGE");
-    strcat (result,piece);
-    result[NUMSIZE+4]='\0';
-    delete [] piece;
-
-    return result;
-}
-
-
-char* Splitter::numToText (int x)
-{
-	char* res = new char[NUMSIZE+1];
-	for (int i=0;i<NUMSIZE;i++)
-		res[i]='0';
-	int i=NUMSIZE-1;
-	while (x!=0)
-	{
-		res[i--]='0'+x%10;
-		x/=10;
-	}
-	res [NUMSIZE]='\0';
-	return res;
-}
-
-void Splitter::findTitle ( )
-{
-    if (chapterSign_==NULL)
-    {
-        delete [] curTitle_;
-        curTitle_= NULL;
-    }
-    fpos_t pos;
-    fgetpos (f_input_,&pos);
-    char* const tmpStr = new char [FILESIZE];
-    for (int i=0;i<FILESIZE;i++)
-    {
-        tmpStr[i]=fgetc(f_input_);
-    }
-    fsetpos (f_input_,&pos);
-    char* where = strstr (tmpStr,chapterSign_);    
-    int nillPos = 0;
-    if (where != NULL)
-    {
-        delete [] curTitle_;
-        nillPos= strchr(where,'\n')-where;
-        //where [nillPos] = '\0';
-        curTitle_ = new char [nillPos+1];
-        strncpy (curTitle_,where,nillPos);
-        curTitle_[nillPos]='\0';
-        //where [nillPos] = '\n';
-    }
-    delete [] tmpStr;
-}
-
-bool Splitter::openFile ()
-{
-    f_input_ = fopen (filename_,"r");
-    return f_input_;
 }
 
 void Splitter::freeAll ()
 {
-    delete [] title_;
-    delete [] chapterSign_;
-    delete [] filename_;
-    delete [] outputPath_;
-    delete [] curTitle_;
+    delete [] _chapterSign;
+    delete [] _filename;
+    delete [] _outputPath;
+    delete [] _currentTitle;
+    fclose (_sourceFile);
+}
+
+void Splitter::findChapter ()
+{
+    fpos_t file_pos;
+    fgetpos (_sourceFile,&file_pos);
+
+    char* buff = new char [BUFFER_SIZE];
+    for (int i=0;i<BUFFER_SIZE;i++)
+    {
+        buff[i]=fgetc(_sourceFile);
+    }
+
+    char* where = strstr (buff,_chapterSign);
+    int len=0;
+    if (where !=NULL)
+    {
+        while (where[len++]!='\n');
+
+        delete [] _currentTitle;
+        _currentTitle = new char [len];
+        for (int i=0;i<len;i++)
+        {
+            _currentTitle[i]= where[i];
+        }
+    }
+
+    delete [] buff;
 }
 
 bool Splitter::Split ()
 {
-
-    while (filesize_>ftell(f_input_))
+    while (!feof (_sourceFile))
     {
-        int diff = filesize_ - ftell (f_input_);
-        if (curPiece_>345)
+        int diff = _filesize-ftell(_sourceFile);
+        Buffer frstBuffer ;
+        frstBuffer.fillBuffer (_sourceFile);
+        findChapter ();
+        char* prevFile = NULL;
+        char* nextFile = NULL;
+        char* curFile = numToString (_currentPiece);
+        if (_currentPiece!=0)
         {
-            curPiece_=curPiece_;
-        }
-        findTitle ();
-        Buffer buffer (filesize_) ;
-
-        char* prevFile=NULL;
-        if (curPiece_!=0)
-        {
-            prevFile= numToText (curPiece_-1);
+            prevFile = numToString (_currentPiece-1);
         }
 
-        char*   nxtFile=NULL;        
-        if (diff>FILESIZE)
+        if (diff>BUFFER_SIZE)
         {
-            nxtFile = numToText (curPiece_+1);            
+            nextFile = numToString (_currentPiece+1);
         }
 
-        buffer.prepareBuffer (nxtFile,prevFile,curTitle_);        
-        buffer.fillBuffer (f_input_);
-        fprintf (log_,"CUR_PIECE:  %s\n",numToText (curPiece_));
-        buffer.writeStat (log_);
-        if (diff<FILESIZE)
-        {
-           buffer.terminateBuffer (diff);
-        }
-        char* curFile = numToText (curPiece_);
-        buffer.writeBuffer (curFile);
+        Buffer scndBuffer;
+        scndBuffer.writeTagPrev (prevFile);
+        scndBuffer.writeTagTitle (_currentTitle);
+        scndBuffer.writeTagNext (nextFile);
+
+        delete [] nextFile;
         delete [] prevFile;
-        delete [] nxtFile;
+
+        int mark = frstBuffer.findLastPunctuationMark (scndBuffer.tellSize ());
+        scndBuffer.fillBuffer (frstBuffer, mark);
+
+        scndBuffer.writeBuffer (curFile);
         delete [] curFile;
-        curPiece_++;
     }
-    return true;
+}
+
+char* Splitter::numToString (int x)
+{
+    char* res = new char [NUMSIZE];
+    for (int i=0;i<NUMSIZE;i++)
+    {
+        res[i]='0';
+    }
+
+    int i=0;
+    while (x!=0)
+    {
+        res[NUMSIZE-1-i]=x%10+'0';
+        x/=10;
+        i++;
+    }
+    return res;
 }

@@ -1,36 +1,34 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#pragma once
 
-#include "PodExceptions.h"
-#include <cstring>
+#define BUFFER_SIZE 4096
+
+
 #include <stdio.h>
+#include <iostream>
+#include <cstring>
 
-#define BUFF_SIZE 4096
-#define SCREEN_SIZE 4097
 class Buffer
 {
-    char buffer_ [BUFF_SIZE];
-    int textBeg_;
-    int textEnd_;
-    int bufferEnd_;
-    int inFileSize_;
-
-
-
-
-    bool writeTagPrev (char* filename);
-    bool writeTagNext (char* filename);
-    bool writeTagTitle (char* title);
-    bool shiftTextEndLeft (int count);
-    int getDiff (FILE* file);
+	char _buffer [BUFFER_SIZE];
+	int _bufferEnd;
+	int _textBegin;
+	int _textEnd;
 public:
-    Buffer(int inFileSize);   
-    bool prepareBuffer (char* nxtFilename, char* prevFilename, char* title);
-    bool fillBuffer (FILE* fin);
-    void terminateBuffer (int pos);
-    bool writeBuffer (char* foutName);
-    void writeStat (FILE* fout);
-    ~Buffer (){};
-};
+	Buffer(void);
 
-#endif // BUFFER_H
+	bool fillBuffer (FILE* fin);
+	int fillBuffer (Buffer buff, int bytes);
+
+	void writeTagPrev (char* filename);
+	void writeTagNext (char* filename);
+	void writeTagTitle(char* title);
+
+	bool writeBuffer (char* filename);
+	void terminateBuffer (int pos);
+	void shiftLeft (int count);
+	void shiftRight (int count);
+	int findLastPunctuationMark (int);
+	int tellSize ();
+
+	~Buffer(void);
+};

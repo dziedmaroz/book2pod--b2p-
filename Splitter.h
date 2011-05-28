@@ -2,11 +2,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <cstring>
 
 
-#define FILESIZE 4096
+#define BUFFER_SIZE 4096
 #define LOGFILE "splitlog.log"
-#define NUMSIZE 5
+#define NUMSIZE 8
 
 using namespace std;
 
@@ -14,40 +15,36 @@ struct Args
 {
     char* chapterSign_;
     char* filename_;
-    char* outputPath_;
-    bool verbose_;
-    char* outLog_;
+    char* outputPath_;        
 
 };
 
 class Splitter
 {
 
-	char* title_;
-	char* chapterSign_;
-	int maxPieces_;
-	char* filename_;
-	char* outputPath_;
-	int filesize_;
-        bool verbose_;
-        int curPiece_;
-        bool verbScreen_;
-        char* curTitle_;
-        FILE* log_;
-        FILE* f_input_;
+    char* _chapterSign;
+    char* _filename;
+    char* _outputPath;
+    char* _currentTitle;
 
-        Splitter(void);
-        int getFileSize (char* filename);
-        char* genNoteName ();
-        char* numToText (int x);
-        void findTitle ( );
-        bool openFile ();
-        void freeAll ();
+    int _filesize;
+    int _currentPiece;
+
+    FILE* _sourceFile;
+
+    bool _isErrors;
+
+    Splitter ();
+    void freeAll ();
+    void findChapter ();
+    char* numToString (int x);
 public:
-        Splitter (char* filename,bool verbose, char* logOutput="", char* outputPath ="", char* chaterSign="ГЛАВА") ;
-        Splitter& operator= (Splitter& orig);
+    Splitter (Args* args);
+
     bool Split ();
-        ~Splitter(void);
+
+    ~Splitter ();
+
 
 
 

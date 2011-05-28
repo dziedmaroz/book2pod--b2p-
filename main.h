@@ -10,3 +10,4 @@
 
 char* numToText (int x);
 Args* parseArgumets (int argc, char** argv);
+void destroyArgs (Args* args);
